@@ -1,0 +1,15 @@
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\bin\Debug\CAN_Loader.exe.config
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\bin\Debug\CAN_Loader.exe
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\bin\Debug\CAN_Loader.pdb
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\bin\Debug\LibUsbDotNet.LibUsbDotNet.dll
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\bin\Debug\WinUSBNet.dll
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\bin\Debug\LibUsbDotNet.LibUsbDotNet.pdb
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\bin\Debug\WinUSBNet.xml
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\obj\Debug\CAN_Loader.csproj.AssemblyReference.cache
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\obj\Debug\CAN_Loader.Form1.resources
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\obj\Debug\CAN_Loader.Properties.Resources.resources
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\obj\Debug\CAN_Loader.csproj.GenerateResource.cache
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\obj\Debug\CAN_Loader.csproj.CoreCompileInputs.cache
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\obj\Debug\CAN_Loader.csproj.CopyComplete
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\obj\Debug\CAN_Loader.exe
+C:\Users\Nick\source\repos\CAN_Loader\CAN_Loader\obj\Debug\CAN_Loader.pdb
