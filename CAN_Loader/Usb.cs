@@ -1,14 +1,7 @@
 ﻿using LibUsbDotNet;
 using LibUsbDotNet.Main;
-using MadWizard.WinUSBNet;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
 
 namespace CAN_Loader
 {
@@ -58,13 +51,9 @@ namespace CAN_Loader
                 while (ec == ErrorCode.None)
                 {
                     int bytesRead;
-
                     // If the device hasn't sent data in the last 100 milliseconds,
                     // a timeout error (ec = IoTimedOut) will occur. 
                     ec = reader.Read(readBuffer, 100, out bytesRead);
-
-                    if (bytesRead == 0) throw new Exception("No more bytes!");
-
                     // Write that output to the console.
                     Console.Write(Encoding.Default.GetString(readBuffer, 0, bytesRead));
                 }
@@ -92,14 +81,11 @@ namespace CAN_Loader
                             // Release interface #0.
                             wholeUsbDevice.ReleaseInterface(0);
                         }
-
                         MyUsbDevice.Close();
                     }
                     MyUsbDevice = null;
-
                     // Free usb resources
                     UsbDevice.Exit();
-
                 }
             }
         }

@@ -1,25 +1,72 @@
 ﻿using System;
 using System.Windows.Forms;
 
+using static CAN_Loader.Constants;
+
 namespace CAN_Loader
 {
     public partial class Form1 : Form
     {
         Usb usb;
 
-		//Defines
-        int dSPI_CAN_PACKET_SIZE = 19;
-        int dSPI_CAN_PACKET_CHECKSUM_LOCATION = 18;
-		//USB Commands
-		byte dTRANSMIT_MESSAGE_EV = 0xA3;
-		//////////////////////////////////////////////////
 		public Form1()
         {
             InitializeComponent();
             usb = new Usb();
         }
 
-        private void SendPacket_Click(object sender, EventArgs e)
+		void LoadPLC(string path)
+        {
+			Console.WriteLine("======LOAD PLC START=======\n");
+			JumpToBootloader();
+			WriteFlash(path);
+			JumpToApp();
+			StopPLC();
+			Console.WriteLine("======LOAD PLC FINISH=======\n");
+		}
+
+        void JumpToBootloader()
+        {
+			self.reset();
+			self.bootLock();
+			sleep(0.05)
+
+			self._updateInfo();
+			if (self.HOST_ID != _HOST_BOOTLOADER_ID):
+            self.reset();
+			self.bootLock();
+			self._updateInfo();
+
+			if (self.HOST_ID != _HOST_BOOTLOADER_ID or self.HOST_VERSION != _HOST_VERSION):
+            raise IzmPLCException("PLC jump to bootloader error")
+        }
+
+		void Reset()
+        {
+			//print("========reset==============")
+			//self.reconnect()
+			self.sendCmdWithoutResp(_CMD_RESET, b'\x00');
+			//self.disconnect()
+			sleep(0.2)
+			//self.connect()
+		}
+		
+		void WriteFlash(string path)
+        {
+
+        }
+
+		void JumpToApp()
+		{
+
+		}
+
+		void StopPLC()
+		{
+
+		}
+
+		void SendPacket_Click(object sender, EventArgs e)
         {
             byte[] OutputPacketBuffer = new byte[dSPI_CAN_PACKET_SIZE];
 			bool extendedFlag = true;
@@ -30,12 +77,7 @@ namespace CAN_Loader
 			byte tempEIDH = 0;
 			byte tempEIDL = 0;
 			byte tempDLC = 8;
-
 			byte CheckSum = 0;
-
-			//Transmit single message
-			//////////////////////////////////////////////////////////////////
-			
 
 			//break out tempID into SIDH / SIDL / EIDH / EIDL
 			breakOutIDintoHex(extendedFlag, tempID, tempSIDH, tempSIDL, tempEIDH, tempEIDL);
@@ -57,7 +99,7 @@ namespace CAN_Loader
 			OutputPacketBuffer[11] = 1;
 			OutputPacketBuffer[12] = 1;
 			OutputPacketBuffer[13] = 2;
-
+			//////////
 			OutputPacketBuffer[14] = 0;
 			OutputPacketBuffer[15] = 0;//tempPeriodHigh;	Not used for a single shot
 			OutputPacketBuffer[16] = 0;//tempPeriodLow;	Not used for a single shot
@@ -70,7 +112,7 @@ namespace CAN_Loader
             //Checksum byte
             OutputPacketBuffer[dSPI_CAN_PACKET_CHECKSUM_LOCATION] = CheckSum;
 
-			//usb.TransferOut(OutputPacketBuffer, dSPI_CAN_PACKET_SIZE);
+			//Transmit single message
 			usb.TransferOut(OutputPacketBuffer);
         }
 
@@ -91,7 +133,6 @@ namespace CAN_Loader
 				//		   // 1111 1111 / 111 11 / 1111 1111 / 1111 1111
 				//            00001111 222x3x33 44445555 66667777
 				//            sidh       sidl      eidh      eidl
-
 
 				//EIDL
 				passedInEIDL = 0xFF & tempPassedInID; //CAN_extendedLo_ID_TX1 = &HFF And CAN_UserEnter_ID_TX1
