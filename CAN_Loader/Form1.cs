@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using static CAN_Loader.Constants;
@@ -80,7 +81,7 @@ namespace CAN_Loader
 			byte[] OutputPacketBuffer = new byte[dSPI_CAN_PACKET_SIZE];
 			bool extendedFlag = true;
 
-			uint tempID = 0xFF00 & cmd;
+			uint tempID = (0xFF00 | cmd) << 8;
 			byte tempSIDH = 0;
 			byte tempSIDL = 0;
 			byte tempEIDH = 0;
@@ -131,8 +132,6 @@ namespace CAN_Loader
 			bool extendedFlag = true;
 
 			uint tempID = (0xFF00 | cmd) << 8;
-			
-			
 			
 			byte tempSIDH = 0;
 			byte tempSIDL = 0;
@@ -251,6 +250,11 @@ namespace CAN_Loader
 			int i = 1;
 			while (i > 0)
 			{
+				if(i == 1)
+                {
+					usb.Recieve();
+					i++;
+                }
 				SendCmd(_CMD_ECHO);
 				Thread.Sleep(100);
 			}
@@ -258,6 +262,8 @@ namespace CAN_Loader
 
         private void btn_Load_Click(object sender, EventArgs e)
         {
+			Task task = new Task(usb.Recieve);
+			task.Start();
 			LoadPLC();
 		}
     }
