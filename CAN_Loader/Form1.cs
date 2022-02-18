@@ -247,17 +247,8 @@ namespace CAN_Loader
 
         private void button1_Click(object sender, EventArgs e)
         {
-			int i = 1;
-			while (i > 0)
-			{
-				if(i == 1)
-                {
-					usb.Recieve();
-					i++;
-                }
-				SendCmd(_CMD_ECHO);
-				Thread.Sleep(100);
-			}
+			SendCmd(_CMD_ECHO);
+			usb.Recieve();
         }
 
         private void btn_Load_Click(object sender, EventArgs e)
