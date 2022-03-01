@@ -6,15 +6,18 @@ using System.Threading.Tasks;
 
 namespace CAN_Loader
 {
-    public static class Constants
+    public static class Globals
     {
+        //CAN message buffer
+        public static byte[] packetBuffer = new byte[19];
+
         //Defines
         public const int dSPI_CAN_PACKET_SIZE = 19;
         public const int dSPI_CAN_PACKET_CHECKSUM_LOCATION = 18;
         //USB Commands
         public const byte dTRANSMIT_MESSAGE_EV = 0xA3;
+        public const byte dRECEIVE_MESSAGE = 0xE3;
         //////////////////////////////////////////////////
-        ///
 
         //Loader commands
         public const uint _CMD_ECHO = 1;
@@ -44,6 +47,7 @@ namespace CAN_Loader
         public const uint _CMD_GET_DEBUG_VARIABLES_FINISH = 209;
         public const uint _CMD_FREE_DEBUG_DATA = 210;
 
+        //Response with the first byte of data
         public const uint _OK = 1;
         public const uint _ERROR = 0;
 
