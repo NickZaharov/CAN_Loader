@@ -18,7 +18,7 @@ namespace CAN_Loader
 
 			Usb usb = new Usb();
 			can = new CanMicrochip(usb);
-			Loader loader = new Loader(can);
+			loader = new Loader(can);
 
 			Task receiveTask = new Task(usb.Receive);
 			receiveTask.Start();

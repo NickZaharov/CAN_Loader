@@ -10,7 +10,7 @@ namespace CAN_Loader
     class Usb
     {
         UsbDevice MyUsbDevice;
-        UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(0x04D8, 0x0A30);
+        UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(0x04d8, 0x0a30);
         UsbEndpointReader reader;
         UsbEndpointWriter writer;
 
@@ -54,7 +54,6 @@ namespace CAN_Loader
                 int bytesWritten;
                 ec = writer.Write(buffer, 1000, out bytesWritten);
                 if (ec != ErrorCode.None) throw new Exception(UsbDevice.LastErrorString);
-
             }
             catch (Exception ex)
             {
@@ -66,31 +65,51 @@ namespace CAN_Loader
         public void Receive()
         {
             byte[] packetId = new byte[4];
-            uint tempID;
             int bytesReaden;
             byte[] readBuffer = new byte[19];
-
             while (true)
             {
                 reader.Read(readBuffer, 50, out bytesReaden);
-                Thread.Sleep(1);
-
                 if (readBuffer[0] == dRECEIVE_MESSAGE)
                 {
-                    packetId[0] = readBuffer[1];
-                    packetId[1] = readBuffer[2];
-                    packetId[2] = readBuffer[3];
-                    packetId[3] = readBuffer[4];
-                    tempID = mchpID2CANid(packetId);
-
+                    for(int i = 0; i < 4; i++)
+                    {
+                        packetId[i] = readBuffer[i + 1];
+                    }
+                    for (int i = readBuffer[5]; i < 8; i++)
+                    {
+                        readBuffer[i + 6] = 0;
+                    }
+                    gPacketID = mchpID2CANid(packetId);
+                    gWordNumber = BitConverter.ToInt32(readBuffer, 10);
+                    Console.WriteLine("Recieved message ID:" + gPacketID.ToString("X") + "  Data: " + readBuffer[6] + " " + readBuffer[7] + " " + readBuffer[8] + " " + readBuffer[9] + " " + readBuffer[10]
+                         + " " + readBuffer[11] + " " + readBuffer[12] + " " + readBuffer[13] + " Number: " + BitConverter.ToInt32(readBuffer, 10));
                     for (int i = 0; i < 19; i++)
                     {
                         packetBuffer[i] = readBuffer[i];
+                        readBuffer[i] = 0;
                     }
-
-                    string hexValue = tempID.ToString("X");
-                    Console.WriteLine("Recieved message ID:" + hexValue + "  Data: " + readBuffer[6]);
+                    Thread.Sleep(1);
                 }
+                /*
+                 if (readBuffer[6] != 250 && readBuffer[6] != 0 && readBuffer[0] != 255)
+                {
+                    for(int i = 0; i < 4; i++)
+                    {
+                        packetId[i] = readBuffer[i + 1];
+                    }
+                    
+                    gPacketID = mchpID2CANid(packetId);
+                    gWordNumber = BitConverter.ToInt32(readBuffer, 10);
+                    Console.WriteLine("Recieved message ID:" + gPacketID.ToString("X") + "  Data: " + readBuffer[6] + " " + readBuffer[7] + " " + readBuffer[8] + " " + readBuffer[9] + " " + readBuffer[10]
+                         + " " + readBuffer[11] + " " + readBuffer[12] + " " + readBuffer[13] + " Number: " + BitConverter.ToInt32(readBuffer, 10));
+                    for (int i = 0; i < 19; i++)
+                    {
+                        packetBuffer[i] = readBuffer[i];
+                        readBuffer[i] = 0;
+                    }
+                }
+                 */
             }
         }
 

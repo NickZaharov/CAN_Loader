@@ -10,15 +10,13 @@ namespace CAN_Loader
     class Loader
     {
 		private readonly CanMicrochip _can;
-
 		Stopwatch stopwatch = new Stopwatch();
-
-		delegate void ChangeProgress(string text);
 
 		public Loader(CanMicrochip can)
 		{
 			_can = can;
 		}
+
 		public void LoadPLC(string FilePath, ProgressBar progressBar)
 		{
 			Console.WriteLine("======LOAD PLC START=======\n");
@@ -29,45 +27,83 @@ namespace CAN_Loader
 			Console.WriteLine("======LOAD PLC FINISH=======\n");
 		}
 
-		void JumpToBootloader()
+		 public void JumpToBootloader()
 		{
 			packetBuffer[6] = 0;
 			_can.SendCmd(_CMD_RESET);
-			while (packetBuffer[6] != _OK) { }
+			while (packetBuffer[6] != _OK) { Thread.Sleep(5); }
 			Thread.Sleep(5000);
 		}
 
 		void WriteFlash(string FilePath, ProgressBar progressBar)
 		{
-			byte[] tmp = new byte[8];
-
+			int error = 0;
+			byte[] data = new byte[8];
+			byte[] tmp;
 			packetBuffer[6] = 0;
 			_can.SendCmd(_CMD_FLASH_EARSE);
-			while (packetBuffer[6] != _OK) { }
-
+			while (packetBuffer[6] != _OK) { Thread.Sleep(5); }
+			packetBuffer[6] = 0;
 			_can.SendCmd(_CMD_FLASH_WRITE_START);
-
+			while (packetBuffer[6] != _OK) { Thread.Sleep(5); }
 			FileInfo fileInf = new FileInfo(FilePath);
 			if (fileInf.Exists)
 			{
-				int i = 0, progress = 0;
+				int bytesReaden = 0, progress = 0;
+				int wordCounter = 0;
 				using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
 				{
 					// пока не достигнут конец файла считываем по 4 байта
 					while (reader.BaseStream.Position != reader.BaseStream.Length)
 					{
 						tmp = reader.ReadBytes(4);
-						i += 4;
+						for (int i = 0; i < 4; i++) data[i] = tmp[i];
+						bytesReaden += 4;
+						wordCounter++;
+						byte[] numInBytes = BitConverter.GetBytes(wordCounter);
+						for (int i = 0; i < 4; i++) data[i + 4] = numInBytes[i];
 
 						stopwatch.Start();
-						packetBuffer[6] = 0;
-						_can.SendCmdWithData(_CMD_FLASH_WRITE_NEXT_WORD, tmp);
-						while (packetBuffer[6] != _OK) { }
+						_can.ClearBuffer();
+						gPacketID = 0;
+						int timeout = 0;
+						_can.SendCmdWithData(_CMD_FLASH_WRITE_NEXT_WORD, data);
+						while (gPacketID == 0) 
+						{
+							Thread.Sleep(1);
+							timeout++;
+							if (timeout % 
+								100 == 0)
+                            {
+								error++;
+								_can.SendCmd(CMD_GET_LAST_RX_DATA);
+								while (true)
+								{
+									Thread.Sleep(1);
+									timeout++;
+									if (timeout % 200 == 0)
+									{
+										break;
+									}
+									if(gWordNumber != 0)
+                                    {
+										if (wordCounter != gWordNumber)
+										{
+											gPacketID = 0;
+											_can.SendCmdWithData(_CMD_FLASH_WRITE_NEXT_WORD, data);
+										}
+										gWordNumber = 0;
+										break;
+									}
+								}
+							}
+						}
+
 						stopwatch.Stop();
 						Console.WriteLine(stopwatch.ElapsedMilliseconds);
 						stopwatch.Reset();
 
-						progressBar.Value = (int)(i / (float)fileInf.Length * 100);
+						progressBar.Value = (int)(bytesReaden / (float)fileInf.Length * 100);
 						if (progressBar.Value > progress)
 						{
 							progress = progressBar.Value;
@@ -76,8 +112,10 @@ namespace CAN_Loader
 							Form1.label1.Invoke(new Del((s) => label1.Text = s), "newText");*/
 
 						}
+						Thread.Sleep(2);
 					}
 					_can.SendCmd(_CMD_FLASH_WRITE_FINISH);
+					Console.WriteLine(error);
 				}
 			}
 			else

@@ -35,9 +35,9 @@ namespace CAN_Loader
 			OutputPacketBuffer[5] = 0;//DLC
 
 			//////////
-			OutputPacketBuffer[14] = 0;
+			OutputPacketBuffer[14] = 4;
 			OutputPacketBuffer[15] = 0;//tempPeriodHigh;	Not used for a single shot
-			OutputPacketBuffer[16] = 0;//tempPeriodLow;	Not used for a single shot
+			OutputPacketBuffer[16] = 0;//tempPeriodLow;		Not used for a single shot
 			OutputPacketBuffer[17] = 0;//tempRepeat;		Not used for a single shot
 
 			for (int i = 0; i < dSPI_CAN_PACKET_SIZE; i++) //2 - Start checksum at Command, 19 last byte of timestamp, 20 is checksum byte
@@ -83,7 +83,7 @@ namespace CAN_Loader
 			
 			OutputPacketBuffer[14] = 0;
 			OutputPacketBuffer[15] = 0;//tempPeriodHigh;	Not used for a single shot
-			OutputPacketBuffer[16] = 0;//tempPeriodLow;	Not used for a single shot
+			OutputPacketBuffer[16] = 0;//tempPeriodLow;		Not used for a single shot
 			OutputPacketBuffer[17] = 0;//tempRepeat;		Not used for a single shot
 
 			for (int i = 0; i < dSPI_CAN_PACKET_SIZE; i++) //2 - Start checksum at Command, 19 last byte of timestamp, 20 is checksum byte
@@ -94,6 +94,26 @@ namespace CAN_Loader
 			OutputPacketBuffer[dSPI_CAN_PACKET_CHECKSUM_LOCATION] = CheckSum;
 
 			//Transmit single message
+			_usb.TransferOut(OutputPacketBuffer);
+		}
+
+		public void ChangeBitRate(uint bitrate)
+        {
+			byte[] OutputPacketBuffer = new byte[dSPI_CAN_PACKET_SIZE];
+			byte CheckSum = 0;
+			byte loByte = (byte)(bitrate & 0x00FF);
+			byte hiByte = (byte)(bitrate >> 8);
+
+			OutputPacketBuffer[0] = dCHANGE_BIT_RATE; //Command
+			OutputPacketBuffer[1] = hiByte; //Hi byte
+			OutputPacketBuffer[2] = loByte; //Lo Byte
+
+			//Compute checksum byte
+			for (int i = 0; i < dSPI_CAN_PACKET_SIZE; i++)
+			{
+				CheckSum += OutputPacketBuffer[i];
+			}
+			OutputPacketBuffer[dSPI_CAN_PACKET_CHECKSUM_LOCATION] = CheckSum;
 			_usb.TransferOut(OutputPacketBuffer);
 		}
 
@@ -148,5 +168,10 @@ namespace CAN_Loader
 				passedInSIDH = (byte)(0xFF & tempPassedInID);
 			}
 		}
+
+		public void ClearBuffer()
+        {
+			for (int i = 0; i < 19; i++) packetBuffer[i] = 0;
+        }
 	}
 }

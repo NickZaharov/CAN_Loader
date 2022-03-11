@@ -53,7 +53,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Constants.cs" />
+    <Compile Include="CanMicrochip.cs" />
+    <Compile Include="Globals.cs" />
+    <Compile Include="Loader.cs" />
     <Compile Include="Usb.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
