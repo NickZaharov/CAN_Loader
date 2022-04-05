@@ -2,7 +2,7 @@
 using LibUsbDotNet.Main;
 using System;
 using System.Threading;
-
+using System.Threading.Tasks;
 using static CAN_Loader.Globals;
 
 namespace CAN_Loader
@@ -16,11 +16,16 @@ namespace CAN_Loader
 
         public Usb()
         {
+
+        }
+
+        public bool Usb_Connect()
+        {
             // Find and open the usb device.
             MyUsbDevice = UsbDevice.OpenUsbDevice(MyUsbFinder);
 
             // If the device is open and ready
-            if (MyUsbDevice == null) throw new Exception("Device Not Found.");
+            if (MyUsbDevice == null) return false;
 
             // If this is a "whole" usb device (libusb-win32, linux libusb)
             // it will have an IUsbDevice interface. If not (WinUSB) the 
@@ -44,6 +49,10 @@ namespace CAN_Loader
 
             // open write endpoint 1.
             writer = MyUsbDevice.OpenEndpointWriter(WriteEndpointID.Ep01);
+
+            Task receiveTask = new Task(Receive);
+            receiveTask.Start();
+            return true;
         }
 
         public void TransferOut(byte[] buffer)
@@ -65,14 +74,13 @@ namespace CAN_Loader
         public void Receive()
         {
             byte[] packetId = new byte[4];
-            int bytesReaden;
             byte[] readBuffer = new byte[19];
             while (true)
             {
-                reader.Read(readBuffer, 50, out bytesReaden);
+                reader.Read(readBuffer, 50, out int bytesReaden);
                 if (readBuffer[0] == dRECEIVE_MESSAGE)
                 {
-                    for(int i = 0; i < 4; i++)
+                    for (int i = 0; i < 4; i++)
                     {
                         packetId[i] = readBuffer[i + 1];
                     }

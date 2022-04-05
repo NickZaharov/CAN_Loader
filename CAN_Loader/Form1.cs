@@ -1,53 +1,66 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using static CAN_Loader.Globals;
 
 namespace CAN_Loader
 {
-	public partial class Form1 : Form
-	{
-		Loader loader;
-		CanMicrochip can;
-		string FilePath;
-		
-		public Form1()
-		{
-			InitializeComponent();
+    public partial class Form1 : Form
+    {
+        Loader loader;
+        string filePath;
+        string openFile;
 
-			Usb usb = new Usb();
-			can = new CanMicrochip(usb);
-			loader = new Loader(can);
-
-			Task receiveTask = new Task(usb.Receive);
-			receiveTask.Start();
-		}
-
-		private void btn_fileDialog_Click(object sender, EventArgs e)
-		{
-			using (OpenFileDialog openFileDialog = new OpenFileDialog())
-			{
-				openFileDialog.InitialDirectory = "c:\\";
-				openFileDialog.Filter = "bin files (*.bin) | *.bin";
-				openFileDialog.RestoreDirectory = true;
-
-				if (openFileDialog.ShowDialog() == DialogResult.OK)
-				{
-					//Get the path of specified file
-					FilePath = openFileDialog.FileName;
-				}
-			}
-		}
-
-        private void button1_Click(object sender, EventArgs e)
+        public Form1()
         {
-			can.SendCmd(_CMD_INFO);
-		}
+            InitializeComponent();
+            loader = new Loader(progressBar1, label1);
+        }
+
+        private void btn_fileDialog_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = "c:\\";
+                openFileDialog.Filter = "bin files (*.bin) | *.bin";
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    //Get the path of specified file
+                    filePath = openFileDialog.FileName;
+                    if (filePath != openFile)
+                    {
+                        textBox1.Text += "Выбран файл: " + filePath + Environment.NewLine;
+                        openFile = filePath;
+                    }
+                    else MessageBox.Show("Данный файл уже выбран");
+                }
+            } 
+        }
 
         private void btn_Load_Click(object sender, EventArgs e)
         {
-			loader.LoadPLC(FilePath, progressBar1);
-		}
+            if (filePath == null) MessageBox.Show("Не выбран файл для прошивки");
+            else
+            {
+                btn_fileDialog.Enabled = false;
+                btn_Load.Enabled = false;
+                this.Cursor = Cursors.WaitCursor;
+
+                ///Запуск прошивки
+                if (!loader.LoadPLC(filePath))
+                {
+                    MessageBox.Show("Проверьте подключения!");
+                }
+                else
+                {
+                    textBox1.Text += Environment.NewLine + "Файл успешно загружен: " + filePath + Environment.NewLine + "------------------";
+                }
+                this.Cursor = Cursors.Default;
+                btn_fileDialog.Enabled = true;
+                btn_Load.Enabled = true;
+            }
+        }
     }
 }
