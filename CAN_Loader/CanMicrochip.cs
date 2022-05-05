@@ -1,15 +1,14 @@
-﻿using static CAN_Loader.Globals;
+﻿using System;
+using System.Threading;
+using static CAN_Loader.Globals;
 
 namespace CAN_Loader
 {
     class CanMicrochip
     {
-		private readonly Usb _usb;
+		readonly Usb _usb;
 
-        public CanMicrochip(Usb usb)
-        {
-			_usb = usb;
-        }
+        public CanMicrochip(Usb usb) => _usb = usb;
 
 		public void SendCmd(uint cmd)
 		{
@@ -17,14 +16,9 @@ namespace CAN_Loader
 			bool extendedFlag = true;
 
 			uint tempID = (0xFF00 | cmd) << 8;
-			byte tempSIDH = 0;
-			byte tempSIDL = 0;
-			byte tempEIDH = 0;
-			byte tempEIDL = 0;
-			byte CheckSum = 0;
 
 			//break out tempID into SIDH / SIDL / EIDH / EIDL
-			breakOutIDintoHex(extendedFlag, tempID, ref tempSIDH, ref tempSIDL, ref tempEIDH, ref tempEIDL);
+			BreakOutIDintoHex(extendedFlag, tempID, out byte tempSIDH, out byte tempSIDL, out byte tempEIDH, out byte tempEIDL);
 
 			//Hard code the command for now... may need set this along with the period and repeat later
 			OutputPacketBuffer[0] = dTRANSMIT_MESSAGE_EV;//Command
@@ -34,18 +28,8 @@ namespace CAN_Loader
 			OutputPacketBuffer[4] = tempSIDL;//SIDL
 			OutputPacketBuffer[5] = 0;//DLC
 
-			//////////
-			OutputPacketBuffer[14] = 4;
-			OutputPacketBuffer[15] = 0;//tempPeriodHigh;	Not used for a single shot
-			OutputPacketBuffer[16] = 0;//tempPeriodLow;		Not used for a single shot
-			OutputPacketBuffer[17] = 0;//tempRepeat;		Not used for a single shot
-
-			for (int i = 0; i < dSPI_CAN_PACKET_SIZE; i++) //2 - Start checksum at Command, 19 last byte of timestamp, 20 is checksum byte
-			{
-				CheckSum += OutputPacketBuffer[i];
-			}
 			//Checksum byte
-			OutputPacketBuffer[dSPI_CAN_PACKET_CHECKSUM_LOCATION] = CheckSum;
+			ComputeChecksum(ref OutputPacketBuffer);
 
 			//Transmit single message
 			_usb.TransferOut(OutputPacketBuffer);
@@ -57,14 +41,9 @@ namespace CAN_Loader
 			bool extendedFlag = true;
 
 			uint tempID = (0xFF00 | cmd) << 8;
-			byte tempSIDH = 0;
-			byte tempSIDL = 0;
-			byte tempEIDH = 0;
-			byte tempEIDL = 0;
-			byte CheckSum = 0;
 
 			//break out tempID into SIDH / SIDL / EIDH / EIDL
-			breakOutIDintoHex(extendedFlag, tempID, ref tempSIDH, ref tempSIDL, ref tempEIDH, ref tempEIDL);
+			BreakOutIDintoHex(extendedFlag, tempID, out byte tempSIDH, out byte tempSIDL, out byte tempEIDH, out byte tempEIDL);
 
 			//Hard code the command for now... may need set this along with the period and repeat later
 			OutputPacketBuffer[0] = dTRANSMIT_MESSAGE_EV;//Command
@@ -79,45 +58,37 @@ namespace CAN_Loader
             {
 				OutputPacketBuffer[6 + i] = data[i];
 			}
-			//////
-			
-			OutputPacketBuffer[14] = 0;
-			OutputPacketBuffer[15] = 0;//tempPeriodHigh;	Not used for a single shot
-			OutputPacketBuffer[16] = 0;//tempPeriodLow;		Not used for a single shot
-			OutputPacketBuffer[17] = 0;//tempRepeat;		Not used for a single shot
 
-			for (int i = 0; i < dSPI_CAN_PACKET_SIZE; i++) //2 - Start checksum at Command, 19 last byte of timestamp, 20 is checksum byte
-			{
-				CheckSum += OutputPacketBuffer[i];
-			}
-			//Checksum byte
-			OutputPacketBuffer[dSPI_CAN_PACKET_CHECKSUM_LOCATION] = CheckSum;
+			ComputeChecksum(ref OutputPacketBuffer);
 
-			//Transmit single message
 			_usb.TransferOut(OutputPacketBuffer);
 		}
-
-		public void ChangeBitRate(uint bitrate)
+		
+		public void ChangeBitRate(ushort bitRate)
         {
-			byte[] OutputPacketBuffer = new byte[dSPI_CAN_PACKET_SIZE];
-			byte CheckSum = 0;
-			byte loByte = (byte)(bitrate & 0x00FF);
-			byte hiByte = (byte)(bitrate >> 8);
+            byte[] OutputPacketBuffer = new byte[dSPI_CAN_PACKET_SIZE];
 
-			OutputPacketBuffer[0] = dCHANGE_BIT_RATE; //Command
-			OutputPacketBuffer[1] = hiByte; //Hi byte
-			OutputPacketBuffer[2] = loByte; //Lo Byte
+            OutputPacketBuffer[0] = dCHANGE_BIT_RATE;//Command
+            OutputPacketBuffer[1] = (byte)((ushort)bitRate >> 8);
+            OutputPacketBuffer[2] = (byte)bitRate;
 
-			//Compute checksum byte
+			ComputeChecksum(ref OutputPacketBuffer);
+
+			_usb.TransferOut(OutputPacketBuffer);
+			Thread.Sleep(1000);
+		}
+
+		void ComputeChecksum(ref byte[] Buffer)
+        {
+			byte checkSum = 0;
 			for (int i = 0; i < dSPI_CAN_PACKET_SIZE; i++)
 			{
-				CheckSum += OutputPacketBuffer[i];
+				checkSum += Buffer[i];
 			}
-			OutputPacketBuffer[dSPI_CAN_PACKET_CHECKSUM_LOCATION] = CheckSum;
-			_usb.TransferOut(OutputPacketBuffer);
+			Buffer[dSPI_CAN_PACKET_CHECKSUM_LOCATION] = checkSum;
 		}
 
-		void breakOutIDintoHex(bool passedInExtendedFlag, uint passedInID, ref byte passedInSIDH, ref byte passedInSIDL, ref byte passedInEIDH, ref byte passedInEIDL)
+		void BreakOutIDintoHex(bool passedInExtendedFlag, uint passedInID, out byte passedInSIDH, out byte passedInSIDL, out byte passedInEIDH, out byte passedInEIDL)
 		{
 			uint tempPassedInID;
 			uint wipSIDL;

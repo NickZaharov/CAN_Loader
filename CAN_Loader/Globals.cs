@@ -12,6 +12,9 @@ namespace CAN_Loader
         public static byte[] packetBuffer = new byte[19];
         public static uint gPacketID;
         public static int gWordNumber;
+        public static string filePath;
+        ///Переменная хранящая результат выполнения загрузки
+        public static int gLoaderResponse;
         //Defines
         public const int dSPI_CAN_PACKET_SIZE = 19;
         public const int dSPI_CAN_PACKET_CHECKSUM_LOCATION = 18;
@@ -36,6 +39,14 @@ namespace CAN_Loader
         public const uint dCAN_500KBPS_40MHZ = 500;
         public const uint dCAN_1000KBPS_40MHZ = 1000;
         //////////////////////////////////////////////////
+
+        //Connection status
+        public const int status_InProgram = 2;
+        public const int status_InLoader = 1;
+        public const int status_OK = 1;
+        public const int status_ERROR = 0;
+        public const int status_DISCONNECT = -1;
+        public const int status_SILENCE = -2;
 
         //Loader commands
         public const uint _CMD_ECHO = 1;

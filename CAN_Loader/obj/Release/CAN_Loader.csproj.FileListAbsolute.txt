@@ -2,9 +2,7 @@ D:\GitHub\Repositories\CAN_Loader\CAN_Loader\bin\Release\CAN_Loader.exe.config
 D:\GitHub\Repositories\CAN_Loader\CAN_Loader\bin\Release\CAN_Loader.exe
 D:\GitHub\Repositories\CAN_Loader\CAN_Loader\bin\Release\CAN_Loader.pdb
 D:\GitHub\Repositories\CAN_Loader\CAN_Loader\bin\Release\LibUsbDotNet.LibUsbDotNet.dll
-D:\GitHub\Repositories\CAN_Loader\CAN_Loader\bin\Release\WinUSBNet.dll
 D:\GitHub\Repositories\CAN_Loader\CAN_Loader\bin\Release\LibUsbDotNet.LibUsbDotNet.pdb
-D:\GitHub\Repositories\CAN_Loader\CAN_Loader\bin\Release\WinUSBNet.xml
 D:\GitHub\Repositories\CAN_Loader\CAN_Loader\obj\Release\CAN_Loader.csproj.AssemblyReference.cache
 D:\GitHub\Repositories\CAN_Loader\CAN_Loader\obj\Release\CAN_Loader.Form1.resources
 D:\GitHub\Repositories\CAN_Loader\CAN_Loader\obj\Release\CAN_Loader.Properties.Resources.resources

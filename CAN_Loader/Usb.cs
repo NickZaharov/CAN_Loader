@@ -10,19 +10,14 @@ namespace CAN_Loader
     class Usb
     {
         UsbDevice MyUsbDevice;
-        UsbDeviceFinder MyUsbFinder = new UsbDeviceFinder(0x04d8, 0x0a30);
         UsbEndpointReader reader;
         UsbEndpointWriter writer;
-
-        public Usb()
-        {
-
-        }
+        bool flagRecieve;
 
         public bool Usb_Connect()
         {
             // Find and open the usb device.
-            MyUsbDevice = UsbDevice.OpenUsbDevice(MyUsbFinder);
+            MyUsbDevice = UsbDevice.OpenUsbDevice(new UsbDeviceFinder(0x04d8, 0x0a30));
 
             // If the device is open and ready
             if (MyUsbDevice == null) return false;
@@ -50,9 +45,20 @@ namespace CAN_Loader
             // open write endpoint 1.
             writer = MyUsbDevice.OpenEndpointWriter(WriteEndpointID.Ep01);
 
-            Task receiveTask = new Task(Receive);
+            flagRecieve = true;
+            Task receiveTask = new Task(Receive);   
             receiveTask.Start();
             return true;
+        }
+
+        public void Usb_Disconnect()
+        {
+            flagRecieve = false;
+            Thread.Sleep(100);
+            if(MyUsbDevice != null)
+            {
+                if (MyUsbDevice.IsOpen) MyUsbDevice.Close();
+            }
         }
 
         public void TransferOut(byte[] buffer)
@@ -66,7 +72,6 @@ namespace CAN_Loader
             }
             catch (Exception ex)
             {
-                Console.WriteLine();
                 Console.WriteLine((ec != ErrorCode.None ? ec + ":" : String.Empty) + ex.Message);
             }
         }
@@ -75,7 +80,7 @@ namespace CAN_Loader
         {
             byte[] packetId = new byte[4];
             byte[] readBuffer = new byte[19];
-            while (true)
+            while (flagRecieve)
             {
                 reader.Read(readBuffer, 50, out int bytesReaden);
                 if (readBuffer[0] == dRECEIVE_MESSAGE)
@@ -99,25 +104,6 @@ namespace CAN_Loader
                     }
                     Thread.Sleep(1);
                 }
-                /*
-                 if (readBuffer[6] != 250 && readBuffer[6] != 0 && readBuffer[0] != 255)
-                {
-                    for(int i = 0; i < 4; i++)
-                    {
-                        packetId[i] = readBuffer[i + 1];
-                    }
-                    
-                    gPacketID = mchpID2CANid(packetId);
-                    gWordNumber = BitConverter.ToInt32(readBuffer, 10);
-                    Console.WriteLine("Recieved message ID:" + gPacketID.ToString("X") + "  Data: " + readBuffer[6] + " " + readBuffer[7] + " " + readBuffer[8] + " " + readBuffer[9] + " " + readBuffer[10]
-                         + " " + readBuffer[11] + " " + readBuffer[12] + " " + readBuffer[13] + " Number: " + BitConverter.ToInt32(readBuffer, 10));
-                    for (int i = 0; i < 19; i++)
-                    {
-                        packetBuffer[i] = readBuffer[i];
-                        readBuffer[i] = 0;
-                    }
-                }
-                 */
             }
         }
 

@@ -38,6 +38,7 @@ namespace CAN_Loader
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.btn_Check = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
@@ -49,7 +50,7 @@ namespace CAN_Loader
             this.btn_fileDialog.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_fileDialog.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btn_fileDialog.ForeColor = System.Drawing.Color.White;
-            this.btn_fileDialog.Location = new System.Drawing.Point(240, 209);
+            this.btn_fileDialog.Location = new System.Drawing.Point(142, 209);
             this.btn_fileDialog.Name = "btn_fileDialog";
             this.btn_fileDialog.Size = new System.Drawing.Size(117, 36);
             this.btn_fileDialog.TabIndex = 0;
@@ -64,7 +65,7 @@ namespace CAN_Loader
             this.btn_Load.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_Load.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.btn_Load.ForeColor = System.Drawing.Color.White;
-            this.btn_Load.Location = new System.Drawing.Point(455, 209);
+            this.btn_Load.Location = new System.Drawing.Point(349, 209);
             this.btn_Load.Name = "btn_Load";
             this.btn_Load.Size = new System.Drawing.Size(117, 36);
             this.btn_Load.TabIndex = 2;
@@ -88,13 +89,12 @@ namespace CAN_Loader
             this.label1.BackColor = System.Drawing.Color.White;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.label1.Location = new System.Drawing.Point(390, 300);
+            this.label1.Location = new System.Drawing.Point(392, 300);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(30, 24);
             this.label1.TabIndex = 4;
             this.label1.Text = "__";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label1.Visible = false;
             // 
             // pictureBox1
             // 
@@ -126,6 +126,8 @@ namespace CAN_Loader
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.textBox1.Size = new System.Drawing.Size(525, 259);
             this.textBox1.TabIndex = 8;
+            this.textBox1.TabStop = false;
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // label2
             // 
@@ -137,6 +139,21 @@ namespace CAN_Loader
             this.label2.TabIndex = 9;
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // btn_Check
+            // 
+            this.btn_Check.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.btn_Check.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btn_Check.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btn_Check.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btn_Check.ForeColor = System.Drawing.Color.White;
+            this.btn_Check.Location = new System.Drawing.Point(551, 205);
+            this.btn_Check.Name = "btn_Check";
+            this.btn_Check.Size = new System.Drawing.Size(117, 45);
+            this.btn_Check.TabIndex = 10;
+            this.btn_Check.Text = "Проверить статус";
+            this.btn_Check.UseVisualStyleBackColor = false;
+            this.btn_Check.Click += new System.EventHandler(this.btn_Check_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -144,6 +161,7 @@ namespace CAN_Loader
             this.AutoSize = true;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(798, 612);
+            this.Controls.Add(this.btn_Check);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.pictureBox2);
@@ -174,6 +192,7 @@ namespace CAN_Loader
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btn_Check;
     }
 }
 
