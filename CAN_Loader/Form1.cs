@@ -14,7 +14,7 @@ namespace CAN_Loader
         public Form1()
         {
             InitializeComponent();
-            loader = new Loader(progressBar1, label1);
+            loader = new Loader(progressBar1, label1, textBox1);
         }
 
         private void btn_fileDialog_Click(object sender, EventArgs e)
@@ -48,7 +48,6 @@ namespace CAN_Loader
                 btn_Load.Enabled = false;
                 btn_Check.Enabled = false;
                 this.Cursor = Cursors.WaitCursor;
-                textBox1.Text += "------------------" + Environment.NewLine + "Начало заргузки..." + Environment.NewLine;
                 ///Запуск прошивки
                 await Task.Run(loader.LoadPLC);
                 //Результат выполнения
@@ -68,7 +67,6 @@ namespace CAN_Loader
                 else
                 {
                     textBox1.Text += Environment.NewLine + "Файл успешно загружен: " + filePath + Environment.NewLine + "------------------" + Environment.NewLine;
-                    MessageBox.Show("Файл загружен, переподключите USB коннектор к ПК для дальнейшей работы");
                 }
                 this.Cursor = Cursors.Default;
                 btn_fileDialog.Enabled = true;

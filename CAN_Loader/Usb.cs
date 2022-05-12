@@ -1,6 +1,7 @@
 ﻿using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using static CAN_Loader.Globals;
@@ -21,7 +22,7 @@ namespace CAN_Loader
 
             // If the device is open and ready
             if (MyUsbDevice == null) return false;
-
+            
             // If this is a "whole" usb device (libusb-win32, linux libusb)
             // it will have an IUsbDevice interface. If not (WinUSB) the 
             // variable will be null indicating this is an interface of a 
@@ -55,10 +56,6 @@ namespace CAN_Loader
         {
             flagRecieve = false;
             Thread.Sleep(100);
-            if(MyUsbDevice != null)
-            {
-                if (MyUsbDevice.IsOpen) MyUsbDevice.Close();
-            }
         }
 
         public void TransferOut(byte[] buffer)
@@ -78,11 +75,12 @@ namespace CAN_Loader
 
         public void Receive()
         {
+            Stopwatch timer = new Stopwatch();
             byte[] packetId = new byte[4];
             byte[] readBuffer = new byte[19];
             while (flagRecieve)
             {
-                reader.Read(readBuffer, 50, out int bytesReaden);
+                reader.Read(readBuffer, 100, out int bytesReaden);
                 if (readBuffer[0] == dRECEIVE_MESSAGE)
                 {
                     for (int i = 0; i < 4; i++)
@@ -96,14 +94,29 @@ namespace CAN_Loader
                     gPacketID = mchpID2CANid(packetId);
                     gWordNumber = BitConverter.ToInt32(readBuffer, 10);
                     Console.WriteLine("Recieved message ID:" + gPacketID.ToString("X") + "  Data: " + readBuffer[6] + " " + readBuffer[7] + " " + readBuffer[8] + " " + readBuffer[9] + " " + readBuffer[10]
-                         + " " + readBuffer[11] + " " + readBuffer[12] + " " + readBuffer[13] + " Number: " + BitConverter.ToInt32(readBuffer, 10));
+                         + " " + readBuffer[11] + " " + readBuffer[12] + " " + readBuffer[13] + " Number: " + gWordNumber);
                     for (int i = 0; i < 19; i++)
                     {
                         packetBuffer[i] = readBuffer[i];
                         readBuffer[i] = 0;
                     }
-                    Thread.Sleep(1);
                 }
+            }
+            if (MyUsbDevice != null)
+            {
+                if (MyUsbDevice.IsOpen)
+                {
+                    IUsbDevice wholeUsbDevice = MyUsbDevice as IUsbDevice;
+                    if (!ReferenceEquals(wholeUsbDevice, null))
+                    {
+                        // Release interface #0.
+                        wholeUsbDevice.ReleaseInterface(0);
+                    }
+                    MyUsbDevice.Close();
+                }
+                MyUsbDevice = null;
+                // Free usb resources
+                UsbDevice.Exit();
             }
         }
 
