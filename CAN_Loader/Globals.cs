@@ -15,30 +15,6 @@ namespace CAN_Loader
         public static string filePath;
         ///Переменная хранящая результат выполнения загрузки
         public static int gLoaderResponse;
-        //Defines
-        public const int dSPI_CAN_PACKET_SIZE = 19;
-        public const int dSPI_CAN_PACKET_CHECKSUM_LOCATION = 18;
-        //USB Commands
-        public const byte dTRANSMIT_MESSAGE_EV = 0xA3;
-        public const byte dRECEIVE_MESSAGE = 0xE3;
-        public const byte dCHANGE_BIT_RATE = 0xA1;
-
-        public const uint dCAN_33_3KBPS_40MHZ = 33;
-        public const uint dCAN_50KBPS_40MHZ = 50;
-        public const uint dCAN_80KBPS_40MHZ = 80;
-        public const uint dCAN_83_3KBPS_40MHZ = 83;
-        public const uint dCAN_100KBPS_40MHZ = 100;
-        public const uint dCAN_125KBPS_40MHZ = 125;
-        public const uint dCAN_150KBPS_40MHZ = 150;
-        public const uint dCAN_175KBPS_40MHZ = 175;
-        public const uint dCAN_200KBPS_40MHZ = 200;
-        public const uint dCAN_225KBPS_40MHZ = 225;
-        public const uint dCAN_250KBPS_40MHZ = 250;
-        public const uint dCAN_275KBPS_40MHZ = 275;
-        public const uint dCAN_300KBPS_40MHZ = 300;
-        public const uint dCAN_500KBPS_40MHZ = 500;
-        public const uint dCAN_1000KBPS_40MHZ = 1000;
-        //////////////////////////////////////////////////
 
         //Connection status
         public const int status_InProgram = 2;
