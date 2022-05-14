@@ -44,6 +44,7 @@ namespace CAN_Loader
             JumpToApp();
             StopPLC();
             Console.WriteLine("======LOAD PLC FINISH=======\n");
+            pcan.PCANInitialize();
             gLoaderResponse = status_OK;
         }
 
@@ -51,7 +52,7 @@ namespace CAN_Loader
         {
             pcan.WriteMessage(_CMD_RESET);
             Thread.Sleep(5000);
-            if (!pcan.ReadMessage())
+            if (!pcan.ReadMessageLargeTimeOut())
                 return false;
             return true;
         }
@@ -60,13 +61,14 @@ namespace CAN_Loader
         {
             byte[] data = new byte[8];
             byte[] tmp;
+            int error = 0;
 
             pcan.WriteMessage(_CMD_FLASH_EARSE);
-            if (!pcan.ReadMessage())
+            if (!pcan.ReadMessageLargeTimeOut())
                 return false;
 
             pcan.WriteMessage(_CMD_FLASH_WRITE_START);
-            if (!pcan.ReadMessage())
+            if (!pcan.ReadMessageLargeTimeOut())
                 return false;
 
             FileInfo fileInf = new FileInfo(filePath);
@@ -93,13 +95,15 @@ namespace CAN_Loader
                         pcan.WriteMessage(_CMD_FLASH_WRITE_NEXT_WORD, data);
                         if (!pcan.ReadMessage())
                         {
+                            error++;
                             pcan.WriteMessage(CMD_GET_LAST_RX_DATA);
                             if (!pcan.ReadMessage())
                                 return false;
                             if (gWordNumber != 0)
                             {
+                                Console.WriteLine(gWordNumber);
                                 if (wordCounter != gWordNumber)
-                                    pcan.WriteMessage(_CMD_FLASH_WRITE_NEXT_WORD);
+                                    pcan.WriteMessage(_CMD_FLASH_WRITE_NEXT_WORD, data);
                             }
                         }
 
@@ -110,10 +114,11 @@ namespace CAN_Loader
                             progressLabel.Invoke(new Action(() => progressLabel.Text = progress.ToString() + "%"));
                         }
 
-                        Console.WriteLine(stopwatch.Elapsed.TotalMilliseconds);
+                        Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         stopwatch.Reset();
                     }
                     pcan.WriteMessage(_CMD_FLASH_WRITE_FINISH);
+                    Console.WriteLine("Errors: " + error);
                 }
             }
             return true;
@@ -127,7 +132,7 @@ namespace CAN_Loader
             Thread.Sleep(5000);
         }
 
-        void StopPLC() => pcan.WriteMessage(_CMD_JUMP_TO_APP);
+        void StopPLC() => pcan.WriteMessage(_CMD_STOP_PLC);
 
         public int GetStatus()
         {

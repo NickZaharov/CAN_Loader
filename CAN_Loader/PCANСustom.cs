@@ -81,12 +81,35 @@ namespace CAN_Loader
                 PCANBasic.Read(PcanHandle, out TPCANMsg CANMsg);
                 if (CANMsg.ID != 0)
                 {
-                    Console.WriteLine(CANMsg.ID);
+                    
                     MsgBuffer = CANMsg;
                     return true;
                 }
                 timeout++;
-                if (timeout > 2000) 
+                if (timeout > 200) 
+                    return false;
+                Thread.Sleep(1);
+            }
+        }
+
+        /// <summary>
+        /// Reads (with LARGE TIMEOUT) a CAN message from the receive queue of a PCAN Channel
+        /// </summary>
+        /// <returns></returns>
+        public bool ReadMessageLargeTimeOut()
+        {
+            int timeout = 0;
+            while (true)
+            {
+                PCANBasic.Read(PcanHandle, out TPCANMsg CANMsg);
+                if (CANMsg.ID != 0)
+                {
+                    Console.WriteLine(Convert.ToString(CANMsg.ID, 16));
+                    MsgBuffer = CANMsg;
+                    return true;
+                }
+                timeout++;
+                if (timeout > 10000)
                     return false;
                 Thread.Sleep(1);
             }
