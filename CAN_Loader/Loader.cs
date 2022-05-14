@@ -26,7 +26,7 @@ namespace CAN_Loader
             can = new CanMicrochip(usb);
             progressBar = pb;
             progressLabel = pl;
-            textBox = tb; 
+            textBox = tb;
         }
 
         public void LoadPLC()
@@ -65,15 +65,15 @@ namespace CAN_Loader
         {
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_RESET);
-            while (packetBuffer[6] != _OK) { Thread.Sleep(1); }
             Thread.Sleep(5000);
+            while (packetBuffer[6] != _OK) { Thread.Sleep(1); }
         }
 
         bool WriteFlash()
         {
             byte[] data = new byte[8];
             byte[] tmp;
-            
+
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_FLASH_EARSE);
             while (packetBuffer[6] != _OK) { Thread.Sleep(1); }
@@ -92,16 +92,15 @@ namespace CAN_Loader
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
                         stopwatch.Start();
-                        int error = 0;
-
+                        int timeout = 0;
                         tmp = reader.ReadBytes(4);
-                        for (int i = 0; i < 4; i++) 
+                        for (int i = 0; i < 4; i++)
                             data[i] = tmp[i];
 
                         bytesReaden += 4;
                         wordCounter++;
                         byte[] numInBytes = BitConverter.GetBytes(wordCounter);
-                        for (int i = 0; i < 4; i++) 
+                        for (int i = 0; i < 4; i++)
                             data[i + 4] = numInBytes[i];
 
                         can.ClearBuffer();
@@ -109,34 +108,24 @@ namespace CAN_Loader
                         can.SendCmdWithData(_CMD_FLASH_WRITE_NEXT_WORD, data);
                         while (gPacketID == 0)
                         {
-                            timer.Start();
-                            if (timer.ElapsedMilliseconds > 200)
+                            Thread.Sleep(1);
+                            timeout++;
+                            if (timeout > 500)
                             {
-                                timer.Reset();
-                                if (error > 2)
-                                {
-                                    return false;
-                                }
                                 can.SendCmd(CMD_GET_LAST_RX_DATA);
                                 while (gPacketID == 0)
                                 {
-                                    timer.Start();
-                                    if (timer.ElapsedMilliseconds > 200)
+                                    Thread.Sleep(1);
+                                    timeout++;
+                                    if (timeout > 100)
                                     {
-                                        timer.Reset();
-                                        error++;
-                                        break;
+                                        return false;
                                     }
                                     if (gWordNumber != 0)
                                     {
                                         timer.Reset();
                                         if (wordCounter != gWordNumber)
-                                        {
-                                            can.ClearBuffer();
-                                            gPacketID = 0;
                                             can.SendCmdWithData(_CMD_FLASH_WRITE_NEXT_WORD, data);
-                                        }
-                                        gWordNumber = 0;
                                         break;
                                     }
                                 }
@@ -148,11 +137,8 @@ namespace CAN_Loader
                             progress = progressBar.Value;
                             progressLabel.Invoke(new Action(() => progressLabel.Text = progress.ToString() + "%"));
                         }
-                        timer.Start();
-                        while (timer.ElapsedMilliseconds < 2);
-                        timer.Reset();
-
-                        Console.WriteLine(stopwatch.Elapsed.TotalMilliseconds);
+                        Thread.Sleep(2);
+                        Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         stopwatch.Reset();
                     }
                     can.SendCmd(_CMD_FLASH_WRITE_FINISH);

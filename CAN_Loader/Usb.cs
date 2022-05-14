@@ -101,6 +101,7 @@ namespace CAN_Loader
                         readBuffer[i] = 0;
                     }
                 }
+                Thread.Sleep(1);
             }
             if (MyUsbDevice != null)
             {
