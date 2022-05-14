@@ -44,7 +44,7 @@ namespace CAN_Loader
             else
             {
                 textBox.Invoke(new Action(() => textBox.Text += "------------------" + Environment.NewLine + "Начало загрузки..." + Environment.NewLine));
-
+                Thread.CurrentThread.Priority = ThreadPriority.Highest;
                 Console.WriteLine("======LOAD PLC START=======\n");
                 JumpToBootloader();
                 if (!WriteFlash())
@@ -66,7 +66,7 @@ namespace CAN_Loader
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_RESET);
             Thread.Sleep(5000);
-            while (packetBuffer[6] != _OK) { Thread.Sleep(1); }
+            while (packetBuffer[6] != _OK) { Thread.Sleep(20); }
         }
 
         bool WriteFlash()
@@ -76,7 +76,7 @@ namespace CAN_Loader
 
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_FLASH_EARSE);
-            while (packetBuffer[6] != _OK) { Thread.Sleep(1); }
+            while (packetBuffer[6] != _OK) { Thread.Sleep(20); }
 
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_FLASH_WRITE_START);
@@ -117,7 +117,7 @@ namespace CAN_Loader
                                 {
                                     Thread.Sleep(1);
                                     timeout++;
-                                    if (timeout > 100)
+                                    if (timeout > 1000)
                                     {
                                         return false;
                                     }
@@ -134,6 +134,7 @@ namespace CAN_Loader
                         progressBar.Invoke(new Action(() => progressBar.Value = (int)(bytesReaden / (float)fileInf.Length * 100)));
                         if (progressBar.Value > progress)
                         {
+                            textBox.Invoke(new Action(() => textBox.Text += stopwatch.ElapsedMilliseconds + Environment.NewLine));
                             progress = progressBar.Value;
                             progressLabel.Invoke(new Action(() => progressLabel.Text = progress.ToString() + "%"));
                         }

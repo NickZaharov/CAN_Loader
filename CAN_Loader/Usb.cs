@@ -75,6 +75,7 @@ namespace CAN_Loader
 
         public void Receive()
         {
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
             Stopwatch timer = new Stopwatch();
             byte[] packetId = new byte[4];
             byte[] readBuffer = new byte[19];
@@ -101,7 +102,6 @@ namespace CAN_Loader
                         readBuffer[i] = 0;
                     }
                 }
-                Thread.Sleep(1);
             }
             if (MyUsbDevice != null)
             {
