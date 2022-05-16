@@ -80,7 +80,7 @@ namespace CAN_Loader
 
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_FLASH_WRITE_START);
-            while (packetBuffer[6] != _OK) { Thread.Sleep(1); }
+            while (packetBuffer[6] != _OK) { Thread.Sleep(5); }
 
             FileInfo fileInf = new FileInfo(filePath);
             if (fileInf.Exists)
@@ -110,14 +110,14 @@ namespace CAN_Loader
                         {
                             Thread.Sleep(1);
                             timeout++;
-                            if (timeout > 500)
+                            if (timeout > 300)
                             {
                                 can.SendCmd(CMD_GET_LAST_RX_DATA);
                                 while (gPacketID == 0)
                                 {
                                     Thread.Sleep(1);
                                     timeout++;
-                                    if (timeout > 1000)
+                                    if (timeout > 600)
                                     {
                                         return false;
                                     }
@@ -131,6 +131,10 @@ namespace CAN_Loader
                                 }
                             }
                         }
+                        while(stopwatch.ElapsedMilliseconds < 4)
+                            Thread.Sleep(1);
+
+                        Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         progressBar.Invoke(new Action(() => progressBar.Value = (int)(bytesReaden / (float)fileInf.Length * 100)));
                         if (progressBar.Value > progress)
                         {
@@ -138,8 +142,6 @@ namespace CAN_Loader
                             progress = progressBar.Value;
                             progressLabel.Invoke(new Action(() => progressLabel.Text = progress.ToString() + "%"));
                         }
-                        Thread.Sleep(2);
-                        Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         stopwatch.Reset();
                     }
                     can.SendCmd(_CMD_FLASH_WRITE_FINISH);
