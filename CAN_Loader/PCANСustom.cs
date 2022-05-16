@@ -20,15 +20,16 @@ namespace CAN_Loader
         /// Initialize PCAN connection
         public TPCANMsg MsgBuffer;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public bool PCANInitialize()
+        public bool TryPCANInitialize()
         {
             if (PCANBasic.Initialize(PcanHandle, Bitrate) == TPCANStatus.PCAN_ERROR_OK)
                 return true;
             return false;
+        }
+
+        public void PCANUninitialize()
+        {
+            PCANBasic.Uninitialize(PcanHandle);
         }
 
         /// <summary>

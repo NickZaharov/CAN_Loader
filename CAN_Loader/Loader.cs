@@ -23,13 +23,17 @@ namespace CAN_Loader
             progressBar = pb;
             progressLabel = pl;
             textBox = tb;
-            pcan.PCANInitialize();
         }
 
         public void LoadPLC()
         {
-            textBox.Invoke(new Action(() => textBox.Text += "------------------" + Environment.NewLine + "Начало загрузки..." + Environment.NewLine));
+            if (!pcan.TryPCANInitialize())
+            {
+                gLoaderResponse = status_DISCONNECT;
+                return;
+            }
 
+            textBox.Invoke(new Action(() => textBox.Text += "------------------" + Environment.NewLine + "Начало загрузки..." + Environment.NewLine));
             Console.WriteLine("======LOAD PLC START=======\n");
             if (!JumpToBootloader())
             {
@@ -44,7 +48,7 @@ namespace CAN_Loader
             JumpToApp();
             StopPLC();
             Console.WriteLine("======LOAD PLC FINISH=======\n");
-            pcan.PCANInitialize();
+            pcan.PCANUninitialize();
             gLoaderResponse = status_OK;
         }
 
@@ -132,18 +136,26 @@ namespace CAN_Loader
             Thread.Sleep(5000);
         }
 
-        void StopPLC() => pcan.WriteMessage(_CMD_STOP_PLC);
+        void StopPLC()
+        {
+            pcan.WriteMessage(_CMD_STOP_PLC);
+        }
 
         public int GetStatus()
         {
-            
+            pcan.PCANUninitialize();
+            if (!pcan.TryPCANInitialize())
+                return status_ERROR;
+
             pcan.WriteMessage(_CMD_INFO);
             if (!pcan.ReadMessage())
                 return status_SILENCE;
+
+            pcan.PCANUninitialize();
             if (pcan.MsgBuffer.DATA[1] == _HOST_BOOTLOADER_ID) return status_InLoader;
             if (pcan.MsgBuffer.DATA[1] == _HOST_PROGRAM_ID) return status_InProgram;
             else return status_SILENCE;
         }
-     }
+    }
 }
 

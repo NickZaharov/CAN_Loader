@@ -79,6 +79,8 @@ namespace CAN_Loader
         {
             this.Cursor = Cursors.WaitCursor;
             int status = loader.GetStatus();
+            if(status < 1)
+                status = loader.GetStatus();
             switch (status)
             {
                 case status_ERROR:
