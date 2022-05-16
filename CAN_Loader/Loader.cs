@@ -65,8 +65,8 @@ namespace CAN_Loader
         {
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_RESET);
-            while (packetBuffer[6] != _OK) { Thread.Sleep(1); }
             Thread.Sleep(5000);
+            while (packetBuffer[6] != _OK) { Thread.Sleep(20); }
         }
 
         bool WriteFlash()
@@ -76,7 +76,7 @@ namespace CAN_Loader
             
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_FLASH_EARSE);
-            while (packetBuffer[6] != _OK) { Thread.Sleep(1); }
+            while (packetBuffer[6] != _OK) { Thread.Sleep(20); }
 
             packetBuffer[6] = 0;
             can.SendCmd(_CMD_FLASH_WRITE_START);
@@ -92,7 +92,6 @@ namespace CAN_Loader
                     while (reader.BaseStream.Position != reader.BaseStream.Length)
                     {
                         stopwatch.Start();
-                        int error = 0;
 
                         tmp = reader.ReadBytes(4);
                         for (int i = 0; i < 4; i++) 
@@ -110,49 +109,39 @@ namespace CAN_Loader
                         while (gPacketID == 0)
                         {
                             timer.Start();
-                            if (timer.ElapsedMilliseconds > 200)
+                            if (timer.ElapsedMilliseconds > 300)
                             {
                                 timer.Reset();
-                                if (error > 2)
-                                {
-                                    return false;
-                                }
                                 can.SendCmd(CMD_GET_LAST_RX_DATA);
                                 while (gPacketID == 0)
                                 {
                                     timer.Start();
-                                    if (timer.ElapsedMilliseconds > 200)
+                                    if (timer.ElapsedMilliseconds > 300)
                                     {
                                         timer.Reset();
-                                        error++;
-                                        break;
+                                        return false;
                                     }
                                     if (gWordNumber != 0)
                                     {
                                         timer.Reset();
                                         if (wordCounter != gWordNumber)
-                                        {
-                                            can.ClearBuffer();
-                                            gPacketID = 0;
                                             can.SendCmdWithData(_CMD_FLASH_WRITE_NEXT_WORD, data);
-                                        }
-                                        gWordNumber = 0;
-                                        break;
                                     }
                                 }
                             }
                         }
+                        timer.Start();
+                        while (timer.ElapsedMilliseconds < 5) ;
+                        timer.Reset();
                         progressBar.Invoke(new Action(() => progressBar.Value = (int)(bytesReaden / (float)fileInf.Length * 100)));
                         if (progressBar.Value > progress)
                         {
+                            textBox.Invoke(new Action(() => textBox.Text += stopwatch.ElapsedMilliseconds + Environment.NewLine));
                             progress = progressBar.Value;
                             progressLabel.Invoke(new Action(() => progressLabel.Text = progress.ToString() + "%"));
                         }
-                        timer.Start();
-                        while (timer.ElapsedMilliseconds < 2);
-                        timer.Reset();
-
-                        Console.WriteLine(stopwatch.Elapsed.TotalMilliseconds);
+                        
+                        Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         stopwatch.Reset();
                     }
                     can.SendCmd(_CMD_FLASH_WRITE_FINISH);
